@@ -20,7 +20,6 @@ class selecaoController {
 
   async record(req, res) {
     console.log(req.body);
-    return;
     const selecao = req.body;
     const row = await SelecaoRepository.record(selecao);
     res.json(row);
