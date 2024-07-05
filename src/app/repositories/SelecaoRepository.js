@@ -5,10 +5,13 @@ class SelecaoRepository {
   //Autor Denilson Belarmino dos Santos João
 
   create(body) {
-    const sql = "Insert INTO jogador SET ?";
+    const sql = "INSERT INTO jogador SET ?";
     return new Promise((resolve, reject) => {
       conexao.query(sql, body, (erro, result) => {
-        if (erro) return reject("Não foi possível cadastrar");
+        if (erro) {
+          console.error("Erro na query SQL:", erro);
+          return reject(new Error("Não foi possível cadastrar"));
+        }
         const rows = JSON.parse(JSON.stringify(result));
         return resolve(rows);
       });
@@ -39,14 +42,36 @@ class SelecaoRepository {
   }
 
   findBestRecords() {
-    const sql = `
-      SELECT r.JogadorId, j.Nome, COUNT(*) AS NumeroDeVitorias, MIN(r.TempoJogo) AS MenorTempoJogo, r.DataJogo
-      FROM recordes r
-      INNER JOIN jogador j ON r.JogadorId = j.id
-      WHERE r.Resultado = 'Vitória'
-      GROUP BY r.JogadorId, j.Nome
-      ORDER BY NumeroDeVitorias DESC, MenorTempoJogo ASC
-      LIMIT 3;
+    const sql = `SELECT 
+    JogadorId,
+    Nome,
+    NumeroDeVitorias,
+    MIN(TempoTotalJogo) AS MenorTempoJogoTotal,
+    DataJogo,
+    bi
+FROM (
+    SELECT 
+        r.JogadorId,
+        j.Nome,
+        COUNT(*) AS NumeroDeVitorias,
+        SUM(r.TempoJogo) AS TempoTotalJogo,
+        r.DataJogo,
+        j.bi
+    FROM 
+        recordes r
+    INNER JOIN 
+        jogador j ON r.JogadorId = j.id
+    WHERE 
+        r.Resultado = 'Vitória'
+    GROUP BY 
+        r.JogadorId, j.Nome
+) AS subquery
+GROUP BY 
+    JogadorId, Nome, NumeroDeVitorias, DataJogo, bi
+ORDER BY 
+    NumeroDeVitorias DESC, MenorTempoJogoTotal ASC
+LIMIT 3;
+
     `;
 
     return new Promise((resolve, reject) => {
