@@ -38,6 +38,28 @@ class SelecaoRepository {
     });
   }
 
+  findBestRecords() {
+    const sql = `
+      SELECT r.JogadorId, j.Nome, COUNT(*) AS NumeroDeVitorias, MIN(r.TempoJogo) AS MenorTempoJogo, r.DataJogo
+      FROM recordes r
+      INNER JOIN jogador j ON r.JogadorId = j.id
+      WHERE r.Resultado = 'Vitória'
+      GROUP BY r.JogadorId, j.Nome
+      ORDER BY NumeroDeVitorias DESC, MenorTempoJogo ASC
+      LIMIT 3;
+    `;
+
+    return new Promise((resolve, reject) => {
+      conexao.query(sql, (erro, result) => {
+        if (erro) return reject("Erro ao listar");
+
+        // Fazer o parse dos resultados
+        const rows = JSON.parse(JSON.stringify(result));
+        return resolve(rows);
+      });
+    });
+  }
+
   findById(id) {
     const sql = "select * from selecoes where id=?";
     return new Promise((resolve, reject) => {
@@ -49,8 +71,6 @@ class SelecaoRepository {
     });
   }
 
-
-
   findByNomeAndBi(data) {
     const sql = "SELECT * FROM jogador WHERE nome = ? AND bi = ?";
     return new Promise((resolve, reject) => {
@@ -61,7 +81,6 @@ class SelecaoRepository {
       });
     });
   }
-  
 
   update(id, body) {
     const sql = "UPDATE selecoes SET ? WHERE id=?";

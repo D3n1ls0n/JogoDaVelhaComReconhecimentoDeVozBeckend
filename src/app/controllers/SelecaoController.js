@@ -19,9 +19,13 @@ class selecaoController {
   }
 
   async record(req, res) {
-    console.log(req.body);
     const selecao = req.body;
     const row = await SelecaoRepository.record(selecao);
+    res.json(row);
+  }
+
+  async findBestRecords(req, res) {
+    const row = await SelecaoRepository.findBestRecords();
     res.json(row);
   }
 

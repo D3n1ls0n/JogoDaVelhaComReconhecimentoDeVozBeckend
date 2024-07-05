@@ -15,6 +15,9 @@ router.post("/player", selecaoController.store);
 //Criar recordes
 router.post("/record", selecaoController.record);
 
+//Listar os três maiores recordes
+router.get("/getBestRecords", selecaoController.findBestRecords);
+
 //Pesquisar jogador por nome e bilhete
 router.post("/find-player-by-data", selecaoController.findByData);
 
